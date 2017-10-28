@@ -1,8 +1,10 @@
 package com.esdonmez.esd.dokuzeylulbusstop;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.view.View;
@@ -19,44 +21,26 @@ import com.esdonmez.esd.dokuzeylulbusstop.Models.SurveyModel;
 
 public class MainActivity extends AppCompatActivity {
 
-    Spinner busStopSpinner;
     RadioGroup likeRadioGroup;
     RadioButton likeRadioButton;
     EditText adviceEditText, emailEditText;
     String advice, email, spinnerValue;
     Button okButton;
-    String[] spinner;
+    String id;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        busStopSpinner = (Spinner) findViewById(R.id.busStopSpinner);
         likeRadioGroup = (RadioGroup) findViewById(R.id.likeRadioGroup);
         adviceEditText = (EditText) findViewById(R.id.adviceEditText);
         emailEditText = (EditText) findViewById(R.id.emailEditText);
         okButton = (Button) findViewById(R.id.okButton);
-        spinnerValue = new String();
 
-        spinner = new String[]{
-                "Mühendislik Durağı", "Depark Durağı", "İşletme Durağı", "Mimarlık Durağı"
-        };
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, spinner);
-        busStopSpinner.setAdapter(adapter);
-
-        busStopSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                spinnerValue = spinner[position];
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
+        Intent intent = getIntent();
+        final String name = (String) intent.getStringExtra("name");
+        id = (String) intent.getStringExtra("id");
 
         okButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -70,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
                     int selectedId = likeRadioGroup.getCheckedRadioButtonId();
                     likeRadioButton = (RadioButton) findViewById(selectedId);
 
-                    SurveyModel model = new SurveyModel(advice, email, likeRadioButton.getText().toString(), spinnerValue);
+                    SurveyModel model = new SurveyModel(advice, email, likeRadioButton.getText().toString(), name);
 
                     Intent intent = new Intent(MainActivity.this, SurveyDetailActivity.class);
                     intent.putExtra("survey", model);
@@ -88,8 +72,17 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == 1) {
             if (resultCode == Activity.RESULT_OK) {
                 String result = data.getStringExtra("result");
-                Toast.makeText(getApplicationContext(), result, Toast.LENGTH_LONG).show();
-
+                AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
+                alertDialog.setTitle(result);
+                int voteCount = MapActivity.stopList.get(Integer.parseInt(id)).getVote() + 1;
+                alertDialog.setMessage("Durak Adı: " + MapActivity.stopList.get(Integer.parseInt(id)).getName() + "\nAnkete katılan kişi sayısı: " + voteCount);
+                alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "Kapat",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+                alertDialog.show();
             }
             if (resultCode == Activity.RESULT_CANCELED) {
                 Toast.makeText(getApplicationContext(), "İşlem iptal edildi.", Toast.LENGTH_LONG).show();
