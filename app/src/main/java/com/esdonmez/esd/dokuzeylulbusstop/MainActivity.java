@@ -17,6 +17,8 @@ import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.esdonmez.esd.dokuzeylulbusstop.Helpers.DatabaseHandler;
+import com.esdonmez.esd.dokuzeylulbusstop.Models.StopModel;
 import com.esdonmez.esd.dokuzeylulbusstop.Models.SurveyModel;
 
 public class MainActivity extends AppCompatActivity {
@@ -24,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
     RadioGroup likeRadioGroup;
     RadioButton likeRadioButton;
     EditText adviceEditText, emailEditText;
-    String advice, email, spinnerValue;
+    String advice, email;
     Button okButton;
     String id;
 
@@ -74,12 +76,23 @@ public class MainActivity extends AppCompatActivity {
                 String result = data.getStringExtra("result");
                 AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
                 alertDialog.setTitle(result);
-                int voteCount = MapActivity.stopList.get(Integer.parseInt(id)).getVote() + 1;
-                alertDialog.setMessage("Durak Adı: " + MapActivity.stopList.get(Integer.parseInt(id)).getName() + "\nAnkete katılan kişi sayısı: " + voteCount);
+                alertDialog.setIcon(R.mipmap.ic_launcher);
+
+                DatabaseHandler db = new DatabaseHandler(getApplicationContext());
+                StopModel model = db.getStop(Integer.parseInt(id));
+
+                model.setVote(model.getVote() + 1);
+                model.setLike(model.getLike() + Integer.parseInt(likeRadioButton.getText().toString()));
+                db.updateStop(model);
+                MapActivity.stopList = db.getAllStops();
+
+                alertDialog.setMessage("Durak Adı: " + MapActivity.stopList.get(Integer.parseInt(id)).getName() + "\nAnkete katılan kişi sayısı: " + model.getVote() + "\nPuan Durumu: " + model.getLike());
                 alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "Kapat",
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 dialog.dismiss();
+                                Intent intent = new Intent(MainActivity.this, MapActivity.class);
+                                startActivity(intent);
                             }
                         });
                 alertDialog.show();

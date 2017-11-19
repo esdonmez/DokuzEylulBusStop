@@ -6,8 +6,11 @@ import android.content.Intent;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.ViewDebug;
 import android.widget.Toast;
 
+import com.esdonmez.esd.dokuzeylulbusstop.Helpers.DatabaseHandler;
 import com.esdonmez.esd.dokuzeylulbusstop.Models.StopModel;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -35,10 +38,15 @@ public class MapActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
-        stopList.add(new StopModel("Giriş Durağı", "15.958", "13.222", 4, 2));
-        stopList.add(new StopModel("Çıkış Durağı", "22.958", "45.222", 1, 5));
-        stopList.add(new StopModel("Orta Durağı", "38.958", "74.222", 3, 47));
+        DatabaseHandler db = new DatabaseHandler(this);
 
+        if(db.getAllStops().size() == 0) {
+            db.addStop(new StopModel("Giriş Durağı", "15.958", "13.222", 4, 2));
+            db.addStop(new StopModel("Çıkış Durağı", "22.958", "45.222", 1, 5));
+            db.addStop(new StopModel("Orta Durağı", "38.958", "74.222", 3, 47));
+        }
+
+        stopList = db.getAllStops();
 
         mapView = (MapView) findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
@@ -66,7 +74,7 @@ public class MapActivity extends AppCompatActivity {
                                 .title(model.getName())
                                 .anchor(0.5f, 0.5f);
                         positionMarker = googleMap.addMarker(positionMarkerOptions);
-                        positionMarker.setTag(i);
+                        positionMarker.setTag(model.getId());
                     }
 
                     googleMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(Double.parseDouble(stopList.get(0).getLatitude()),Double.parseDouble(stopList.get(0).getLongitude()))));
@@ -79,6 +87,7 @@ public class MapActivity extends AppCompatActivity {
                             AlertDialog alertDialog = new AlertDialog.Builder(MapActivity.this).create();
                             alertDialog.setTitle(marker.getTitle());
                             alertDialog.setMessage("Bu durağı oylamak ister misiniz?");
+                            alertDialog.setIcon(R.mipmap.ic_launcher);
                             alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Ankete Git",
                                     new DialogInterface.OnClickListener() {
                                         @Override

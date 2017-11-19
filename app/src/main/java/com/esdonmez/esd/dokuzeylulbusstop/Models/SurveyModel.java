@@ -8,6 +8,10 @@ public class SurveyModel implements Serializable {
     private String likeDegree;
     private String busStop;
 
+
+    public SurveyModel() {}
+
+
     public SurveyModel(String advice, String email, String likeDegree, String busStop) {
         this.advice = advice;
         this.email = email;

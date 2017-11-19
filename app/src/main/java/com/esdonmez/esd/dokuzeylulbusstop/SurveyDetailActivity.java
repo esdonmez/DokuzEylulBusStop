@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.esdonmez.esd.dokuzeylulbusstop.Helpers.DatabaseHandler;
 import com.esdonmez.esd.dokuzeylulbusstop.Models.SurveyModel;
 
 public class SurveyDetailActivity extends AppCompatActivity {
@@ -28,7 +29,7 @@ public class SurveyDetailActivity extends AppCompatActivity {
         cancelButton = (Button) findViewById(R.id.cancelButton);
 
         Intent intent = getIntent();
-        SurveyModel model = (SurveyModel) intent.getSerializableExtra("survey");
+        final SurveyModel model = (SurveyModel) intent.getSerializableExtra("survey");
 
         busStopText.setText(model.getBusStop());
         likeDegreeText.setText(model.getLikeDegree());
@@ -38,6 +39,8 @@ public class SurveyDetailActivity extends AppCompatActivity {
         okButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                DatabaseHandler db = new DatabaseHandler(getApplicationContext());
+                db.addSurvey(model);
                 Intent returnIntent = new Intent();
                 returnIntent.putExtra("result","Ankete katıldığınız için teşekkürler.");
                 setResult(Activity.RESULT_OK, returnIntent);
